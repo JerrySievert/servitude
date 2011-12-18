@@ -20,7 +20,7 @@ vows.describe('Servitude').addBatch({
             servitude.plugin(req, res, { path: "/servitude/(.+)", basedir: __dirname + "/files" });
         },
         'the correct result is returned': function (err, data) {
-            assert.equal(data, 'var servitude = {"css":[{"filename":"a.css","contents":"h1 { color: red; font-size: 22px; }"}],"js":[],"errors":[]}' + "\n" + stub);
+            assert.equal(data, 'var servitude = {"css":[{"filename":"a.css","contents":"h1 { color: red; font-size: 22px; }","index":0}],"js":[],"errors":[]}' + "\n" + stub);
         }
     },
     'when a single javascript file is requested': {
@@ -35,7 +35,7 @@ vows.describe('Servitude').addBatch({
             servitude.plugin(req, res, { path: "/servitude/(.+)", basedir: __dirname + "/files" });
         },
         'the correct result is returned': function (err, data) {
-            assert.equal(data, 'var servitude = {"css":[],"js":[{"filename":"b.js","contents":"console.log(\\"hello from a\\");"}],"errors":[]}' + "\n" + stub);
+            assert.equal(data, 'var servitude = {"css":[],"js":[{"filename":"b.js","contents":"console.log(\\"hello from a\\");","index":0}],"errors":[]}' + "\n" + stub);
         }
     }
 }).export(module);
