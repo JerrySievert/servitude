@@ -1,0 +1,25 @@
+{
+  "author": "Jerry Sievert <code@legitimatesounding.com> (http://legitimatesounding.com/blog/index.html)",
+  "name": "servitude",
+  "description": "JavaScript and CSS Sugar",
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/JerrySievert/servitude.git"
+  },
+  "main": "lib/index.js",
+  "keywords": ["javascript", "css", "bricks", "middleware", "sugar"],
+  "license" : "MIT/X11",
+  "engines": {
+    "node": ">=0.4.3"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+    "vows": ">=0.5.0",
+    "mock-request-response": ">=0.1.0"
+  },
+  "scripts": {
+      "test": "vows --spec"
+  }
+}
