@@ -37,5 +37,39 @@ vows.describe('Servitude').addBatch({
         'the correct result is returned': function (err, data) {
             assert.equal(data, 'var servitude = {"css":[],"js":[{"filename":"b.js","contents":"console.log(\\"hello from a\\");","index":0}],"errors":[]}' + "\n" + stub);
         }
+    },
+    'when a filter is applied': {
+        topic: function () {
+            var req = new mrequest.request();
+            req.url = "/servitude/b.js";
+
+            var res = new mresponse.response();
+            var callback = this.callback;
+            res.end = function () { callback(undefined, this._internals.buffer); };
+
+            var filter = function (data, type) {
+                return data.replace('hello', 'goodbye');
+            };
+
+            servitude.plugin(req, res, { path: "/servitude/(.+)", basedir: __dirname + "/files", filter: filter });
+        },
+        'the correct result is returned': function (err, data) {
+            assert.equal(data, 'var servitude = {"css":[],"js":[{"filename":"b.js","contents":"console.log(\\"goodbye from a\\");","index":0}],"errors":[]}' + "\n" + stub);
+        }            
+    },
+    'when uglify is specified': {
+        topic: function () {
+            var req = new mrequest.request();
+            req.url = "/servitude/b.js";
+
+            var res = new mresponse.response();
+            var callback = this.callback;
+            res.end = function () { callback(undefined, this._internals.buffer); };
+
+            servitude.plugin(req, res, { path: "/servitude/(.+)", basedir: __dirname + "/files", uglify: true });
+        },
+        'the correct result is returned': function (err, data) {
+            assert.equal(data, 'var servitude = {"css":[],"js":[{"filename":"b.js","contents":"console.log(\\"hello from a\\")","index":0}],"errors":[]}' + "\n" + stub);
+        }            
     }
 }).export(module);
