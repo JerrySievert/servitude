@@ -70,7 +70,7 @@ Filters are more powerful and allow you to make any modification desired to the 
 A `servitude` object is returned with all output for injection into the DOM.
 
     console.dir(servitude.css);
-    console.dir(servitude.javascript);
+    console.dir(servitude.js);
     
     if (servitude.errors.length) {
       console.log("errors: ");
