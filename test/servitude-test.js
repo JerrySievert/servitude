@@ -71,5 +71,39 @@ vows.describe('Servitude').addBatch({
         'the correct result is returned': function (err, data) {
             assert.equal(data, 'var servitude = {"css":[],"js":[{"filename":"b.js","contents":"console.log(\\"hello from a\\")","index":0}],"errors":[]}' + "\n" + stub);
         }            
+    },
+    'when caching is enabled': {
+        topic: function () {
+            var req = new mrequest.request();
+            req.url = "/servitude/b.js";
+
+            var res = new mresponse.response();
+            var callback = this.callback;
+            res.end = function () { callback(undefined, this._internals.buffer); };
+
+            servitude.plugin(req, res, { path: "/servitude/(.+)", basedir: __dirname + "/files", uglify: true, cache: true });
+        },
+        'data is returned the first time': function (err, data) {
+            assert.equal(data, 'var servitude = {"css":[],"js":[{"filename":"b.js","contents":"console.log(\\"hello from a\\")","index":0}],"errors":[]}' + "\n" + stub);
+        },
+        'and returned the second time when if-modified-since is set': {
+            topic: function () {
+                var req = new mrequest.request();
+                req.url = "/servitude/b.js";
+                req.headers['if-modified-since'] = 'Dec 1, 1969';
+
+                var res = new mresponse.response();
+                var callback = this.callback;
+                var count = 0;
+                res.end = function () { count++; if (count === 2) { callback(undefined, this._internals.statusCode); } };
+                res.statusCode = function (code) { this._internals.statusCode = code; };
+
+                servitude.plugin(req, res, { path: "/servitude/(.+)", basedir: __dirname + "/files", uglify: true, cache: true });
+                servitude.plugin(req, res, { path: "/servitude/(.+)", basedir: __dirname + "/files", uglify: true, cache: true });
+            },
+            'is a 304 statusCode': function (err, statusCode) {
+                assert.equal(statusCode, 304);
+            }
+        }
     }
 }).export(module);

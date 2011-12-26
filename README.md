@@ -33,4 +33,48 @@ Optimize without even thinking about it.
     <!-- include js/jquery.js and css/site.css in one fell swoop -->
     <script type="text/javascript" src="/servitude/js/jquery.js,css/site.css"></script>
 
-That's it!
+# Advanced Usage
+
+## Server Side
+
+### Caching
+
+Enabling caching stores requested files in memory, and only re-retrieves and re-processes a file if it has been changed on disk.
+
+If caching is enabled, and the `if-modified-since` header has been set, a check is made against all files requested and either the response is returned as normal, or a `304` status is returned.
+
+    appServer.addRoute("/servitude/(.+)", servitude, {basedir: "./files", cache: true });
+
+### Uglify
+
+If `uglify` is enabled in the `options`, an attempt is made to `uglify` any JavaScript that has been requested.  Note, this occurs even if the JavaScript has been previously minified.  This may not be desired behavior, so this is turned off by default.
+
+    appServer.addRoute("/servitude/(.+)", servitude, {basedir: "./files", uglify: true });
+
+### Filters
+
+Filters are more powerful and allow you to make any modification desired to the CSS and JavaScript being returned.  A single `filter` method is provided for both CSS and JavaScript, and the second argument is set to determine the type of file being processed.
+
+    var filter = function (data, type) {
+      if (type === 'css') {
+        return data;
+      } else if (type === 'javascript' ){
+        return '(function () { ' + data ' + '})();';
+      }
+    }
+    
+    appServer.addRoute("/servitude/(.+)", servitude, {basedir: "./files", filter: filter });
+
+## Client Side
+
+A `servitude` object is returned with all output for injection into the DOM.
+
+    console.dir(servitude.css);
+    console.dir(servitude.javascript);
+    
+    if (servitude.errors.length) {
+      console.log("errors: ");
+      console.dir(servitude.errors);
+    }
+
+Injection occurs via the `servitude.inject()` method upon load.
