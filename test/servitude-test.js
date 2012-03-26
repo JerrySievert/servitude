@@ -3,7 +3,8 @@ var vows      = require('vows'),
     servitude = require('../lib/index.js'),
     mrequest  = require('mock-request-response/server-request'),
     mresponse = require('mock-request-response/server-response'),
-    fs        = require('fs');
+    fs        = require('fs'),
+    Cromag    = require('cromag');
 
 var stub = fs.readFileSync(__dirname + '/../lib/stub.js', "binary");
 
@@ -90,8 +91,7 @@ vows.describe('Servitude').addBatch({
             topic: function () {
                 var req = new mrequest.request();
                 req.url = "/servitude/b.js";
-                req.headers['if-modified-since'] = 'Dec 1, 1969';
-
+                req.headers['if-modified-since'] = new Cromag().add({days: 1}).toFormat('MMM DD, YYYY');
                 var res = new mresponse.response();
                 var callback = this.callback;
                 var count = 0;

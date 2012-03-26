@@ -2,7 +2,7 @@
   "author": "Jerry Sievert <code@legitimatesounding.com> (http://legitimatesounding.com/blog/index.html)",
   "name": "servitude",
   "description": "JavaScript and CSS Sugar",
-  "version": "0.1.5",
+  "version": "0.1.7",
   "repository": {
     "type": "git",
     "url": "http://github.com/JerrySievert/servitude.git"
@@ -18,7 +18,8 @@
   },
   "devDependencies": {
     "vows": ">=0.5.0",
-    "mock-request-response": ">=0.1.0"
+    "mock-request-response": ">=0.1.0",
+    "cromag": "~0.1.0"
   },
   "scripts": {
       "test": "vows --spec"
