@@ -41,8 +41,6 @@ Optimize without even thinking about it.
 
 Enabling caching stores requested files in memory, and only re-retrieves and re-processes a file if it has been changed on disk.
 
-If caching is enabled, and the `if-modified-since` header has been set, a check is made against all files requested and either the response is returned as normal, or a `304` status is returned.
-
     appServer.addRoute("/servitude/(.+)", servitude, {basedir: "./files", cache: true });
 
 ### Uglify
