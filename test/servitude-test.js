@@ -4,7 +4,7 @@ var vows      = require('vows'),
     mrequest  = require('mock-request-response/server-request'),
     mresponse = require('mock-request-response/server-response'),
     fs        = require('fs'),
-    Cromag    = require('Cromag');
+    Cromag    = require('cromag');
 
 var stub = fs.readFileSync(__dirname + '/../lib/stub.js', "binary");
 
