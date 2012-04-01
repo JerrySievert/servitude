@@ -10,6 +10,15 @@ It's easy, just drop your JavaScript and CSS into a directory, point to it, and 
 
 Optimize without even thinking about it.
 
+Support out of the box for:
+
+* CSS
+* JavaScript
+* CoffeeScript
+* Stylus
+* Less
+* Pluggable Filters
+
 # Installing
 
     $ npm install servitude
@@ -23,7 +32,7 @@ Optimize without even thinking about it.
     
     var appServer = new bricks.appserver();
     
-    appServer.addRoute("/servitude/(.+)", servitude, { basedir: "./files" });
+    appServer.addRoute("/servitude(.+)", servitude, { basedir: "./files" });
     var server = appServer.createServer();
     
     server.listen(3000);
@@ -31,7 +40,9 @@ Optimize without even thinking about it.
 ## Client Side
 
     <!-- include js/jquery.js and css/site.css in one fell swoop -->
-    <script type="text/javascript" src="/servitude/js/jquery.js,css/site.css"></script>
+    <script type="text/javascript" src="/servitude/js/jquery.js,/css/site.css"></script>
+    <!-- include even more, you can use servitude as many times as you need -->
+    <script type="text/javascript" src="/servitude/js/templates.js,/css/templates.css"></script>
 
 # Advanced Usage
 
@@ -41,38 +52,37 @@ Optimize without even thinking about it.
 
 Enabling caching stores requested files in memory, and only re-retrieves and re-processes a file if it has been changed on disk.
 
-    appServer.addRoute("/servitude/(.+)", servitude, {basedir: "./files", cache: true });
+    appServer.addRoute("/servitude/(.+)", servitude, { basedir: "./files", cache: true });
 
 ### Uglify
 
-If `uglify` is enabled in the `options`, an attempt is made to `uglify` any JavaScript that has been requested.  Note, this occurs even if the JavaScript has been previously minified.  This may not be desired behavior, so this is turned off by default.
+If `uglify` is enabled in the `options`, an attempt is made to `uglify` any JavaScript that has been requested.  Note, this occurs even if the JavaScript has been previously minified, as well as for any `.coffee` file that has been compiled.  This may not be desired behavior, so this is turned off by default
 
-    appServer.addRoute("/servitude/(.+)", servitude, {basedir: "./files", uglify: true });
+    appServer.addRoute("/servitude/(.+)", servitude, { basedir: "./files", uglify: true });
 
 ### Filters
 
-Filters are more powerful and allow you to make any modification desired to the CSS and JavaScript being returned.  A single `filter` method is provided for both CSS and JavaScript, and the second argument is set to determine the type of file being processed.
+Filters are more powerful and allow you to process any file as you would like.  This is a good way to add something like `Handlebars` template compilation.  Simply set the `processed` property on the `record` to 
 
-    var filter = function (data, type) {
-      if (type === 'css') {
-        return data;
-      } else if (type === 'javascript' ){
-        return '(function () { ' + data ' + '})();';
-      }
-    }
+    var filter = function (record, options, callback) {
+      record.data = 'var Templates = Templates || { };' +
+                   'Templates[\"filename\"] = Handlebars.template("' + handlebars.precompile(record.data) + '");';
     
-    appServer.addRoute("/servitude/(.+)", servitude, {basedir: "./files", filter: filter });
+      record.processed = 'injectJS(' + JSON.stringify(record)  + ');';
+      callback(null, record);
+    };
+    
+    appServer.addRoute("/servitude/(.+)", servitude, {basedir: "./files", filters: { ".+handlebars$": filter } });
+
 
 ## Client Side
 
-A `servitude` object is returned with all output for injection into the DOM.
+A `servitude` object is returned with all methods for injection into the DOM.
 
-    console.dir(servitude.css);
-    console.dir(servitude.js);
     
     if (servitude.errors.length) {
       console.log("errors: ");
       console.dir(servitude.errors);
     }
 
-Injection occurs via the `servitude.inject()` method upon load.
+Injection occurs via the `servitude.injectCSS()`  and `servitude.injectJS()` methods upon load.
