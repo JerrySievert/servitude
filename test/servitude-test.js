@@ -77,6 +77,23 @@ vows.describe('Servitude').addBatch({
             assert.equal(data, 'var servitude = servitude || {\n    "errors": [ ],\n    "injectCSS": function (data) {\n        var styleElem = document.createElement("style");\n\n        styleElem.setAttribute("data-injected-css", data.filename);\n        styleElem.setAttribute("type", "text/css");\n        styles = document.getElementsByTagName("style");\n        domTarget = styles.length ? styles[styles.length - 1] : document.getElementsByTagName("script")[0];\n        domTarget.parentNode.appendChild(styleElem);\n        if (styleElem.styleSheet) {\n            styleElem.styleSheet.cssText = data.data;\n        } else {\n            styleElem.appendChild(document.createTextNode(data.data));\n        }\n    },\n    "injectJS": function (data) {\n        var jsElem = document.createElement("script");\n\n        jsElem.setAttribute("data-injected-javascript", data.filename);\n        jsElem.setAttribute("type", "text/javascript");\n        domTarget = document.getElementsByTagName("script")[0];\n        domTarget.parentNode.appendChild(jsElem);\n        jsElem.text = data.data;\n    }\n};\nservitude.injectCSS({"data":"body {\\n  background-color: #abc;\\n}\\nh1 {\\n  color: #cba;\\n}\\n","modified":' + mtime + ',"filename":"/d.styl","index":1});');
         }
     },
+    'when a single less file is requested': {
+        topic: function () {
+            var req = new mrequest.request();
+            req.url = "/servitude/e.less";
+
+            var res = new mresponse.response();
+            var callback = this.callback;
+            res.end = function () { callback(undefined, this._internals.buffer); };
+
+            servitude.plugin(req, res, { path: "/servitude(.+)", basedir: __dirname + "/files" });
+        },
+        'the compiled version is returned': function (err, data) {
+            var mtime = fs.statSync(__dirname + '/files/e.less').mtime.valueOf();
+
+            assert.equal(data, 'var servitude = servitude || {\n    "errors": [ ],\n    "injectCSS": function (data) {\n        var styleElem = document.createElement("style");\n\n        styleElem.setAttribute("data-injected-css", data.filename);\n        styleElem.setAttribute("type", "text/css");\n        styles = document.getElementsByTagName("style");\n        domTarget = styles.length ? styles[styles.length - 1] : document.getElementsByTagName("script")[0];\n        domTarget.parentNode.appendChild(styleElem);\n        if (styleElem.styleSheet) {\n            styleElem.styleSheet.cssText = data.data;\n        } else {\n            styleElem.appendChild(document.createTextNode(data.data));\n        }\n    },\n    "injectJS": function (data) {\n        var jsElem = document.createElement("script");\n\n        jsElem.setAttribute("data-injected-javascript", data.filename);\n        jsElem.setAttribute("type", "text/javascript");\n        domTarget = document.getElementsByTagName("script")[0];\n        domTarget.parentNode.appendChild(jsElem);\n        jsElem.text = data.data;\n    }\n};\nservitude.injectCSS({"data":"body {\\n  background-color: #abc;\\n}\\nbody h1 {\\n  color: #cba;\\n}\\n","modified":' + mtime + ',"filename":"/e.less","index":1});');
+        }
+    },
     'when an unknown javascript file is requested': {
         topic: function () {
             var req = new mrequest.request();
