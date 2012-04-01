@@ -66,7 +66,7 @@ Filters are more powerful and allow you to process any file as you would like.  
 
     var filter = function (record, options, callback) {
       record.data = 'var Templates = Templates || { };' +
-                   'Templates[\"filename\"] = Handlebars.template("' + handlebars.precompile(record.data) + '");';
+                   'Templates[\"' + record.filename + '\"] = Handlebars.template("' + handlebars.precompile(record.data) + '");';
     
       record.processed = 'injectJS(' + JSON.stringify(record)  + ');';
       callback(null, record);
