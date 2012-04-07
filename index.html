@@ -72,8 +72,9 @@ server.listen(3000);
 
 <pre><code>&lt;!-- include js/jquery.js and css/site.css in one fell swoop --&gt;
 &lt;script type="text/javascript" src="/servitude/js/jquery.js,/css/site.css"&gt;&lt;/script&gt;
+
 &lt;!-- include even more, you can use servitude as many times as you need --&gt;
-&lt;script type="text/javascript" src="/servitude/js/templates.js,/css/templates.css"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="/servitude/js/tpl.js,/css/templates.css"&gt;&lt;/script&gt;
 </code></pre>
 
 <h1>Advanced Usage</h1>
@@ -96,17 +97,20 @@ server.listen(3000);
 
 <h3>Filters</h3>
 
-<p>Filters are more powerful and allow you to process any file as you would like.  This is a good way to add something like <code>Handlebars</code> template compilation.  Simply set the <code>processed</code> property on the <code>record</code> to </p>
+<p>Filters are more powerful and allow you to process any file as you would like.  This is a good way to add something like <code>Handlebars</code> template compilation.  Simply set the <code>data</code> property on the <code>record</code> to the JavaScript or CSS that should be injected, and the <code>processed</code> property on the <code>record</code> to a string containing either a <code>servitude.injectCSS()</code> or <code>servitude.injectJS()</code> call containing <code>JSON.stringify(record)</code>:</p>
 
 <pre><code>var filter = function (record, options, callback) {
   record.data = 'var Templates = Templates || { };' +
-               'Templates[\"' + record.filename + '\"] = Handlebars.template("' + handlebars.precompile(record.data) + '");';
+                'Templates[\"' + record.filename + '\"] = Handlebars.template("' +
+                handlebars.precompile(record.data) + '");';
 
   record.processed = 'injectJS(' + JSON.stringify(record)  + ');';
   callback(null, record);
 };
 
-appServer.addRoute("/servitude/(.+)", servitude, {basedir: "./files", filters: { ".+handlebars$": filter } });
+appServer.addRoute("/servitude/(.+)",
+                   servitude,
+                   { basedir: "./files", filters: { ".+handlebars$": filter } });
 </code></pre>
 
 <h2>Client Side</h2>
