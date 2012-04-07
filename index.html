@@ -1,0 +1,131 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Servitude by JerrySievert</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Servitude</h1>
+<p>JavaScript and CSS Sugar Middleware</p>
+        <p class="view"><a href="https://github.com/JerrySievert/servitude">View the Project on GitHub <small>JerrySievert/servitude</small></a></p>
+        <ul>
+          <li><a href="https://github.com/JerrySievert/servitude/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/JerrySievert/servitude/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/JerrySievert/servitude">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>Servitude</h1>
+
+<p><a href="http://travis-ci.org/JerrySievert/servitude"><img src="https://secure.travis-ci.org/JerrySievert/servitude.png" alt="Build Status"></a></p>
+
+<p>Super fast sugar for optimizing CSS and JavaScript.</p>
+
+<p>Servitude combines CSS and JavaScript into a single fast and cacheable file, speeding up your site without a ton of extra work.</p>
+
+<p>It's easy, just drop your JavaScript and CSS into a directory, point to it, and list out what you want to include in the order you want to include it.  <code>servitude</code> will inject it into the DOM and your application will be better for it.  No more tons of requests, a single request and everything becomes ready to use.</p>
+
+<p>Optimize without even thinking about it.</p>
+
+<p>Support out of the box for:</p>
+
+<ul>
+<li>CSS</li>
+<li>JavaScript</li>
+<li>CoffeeScript</li>
+<li>Stylus</li>
+<li>Less</li>
+<li>Pluggable Filters</li>
+</ul><h1>Installing</h1>
+
+<pre><code>$ npm install servitude
+</code></pre>
+
+<h1>Usage</h1>
+
+<h2>Server Side</h2>
+
+<pre><code>var servitude = require('servitude');
+var bricks = require('bricks');
+
+var appServer = new bricks.appserver();
+
+appServer.addRoute("/servitude(.+)", servitude, { basedir: "./files" });
+var server = appServer.createServer();
+
+server.listen(3000);
+</code></pre>
+
+<h2>Client Side</h2>
+
+<pre><code>&lt;!-- include js/jquery.js and css/site.css in one fell swoop --&gt;
+&lt;script type="text/javascript" src="/servitude/js/jquery.js,/css/site.css"&gt;&lt;/script&gt;
+&lt;!-- include even more, you can use servitude as many times as you need --&gt;
+&lt;script type="text/javascript" src="/servitude/js/templates.js,/css/templates.css"&gt;&lt;/script&gt;
+</code></pre>
+
+<h1>Advanced Usage</h1>
+
+<h2>Server Side</h2>
+
+<h3>Caching</h3>
+
+<p>Enabling caching stores requested files in memory, and only re-retrieves and re-processes a file if it has been changed on disk.</p>
+
+<pre><code>appServer.addRoute("/servitude/(.+)", servitude, { basedir: "./files", cache: true });
+</code></pre>
+
+<h3>Uglify</h3>
+
+<p>If <code>uglify</code> is enabled in the <code>options</code>, an attempt is made to <code>uglify</code> any JavaScript that has been requested.  Note, this occurs even if the JavaScript has been previously minified, as well as for any <code>.coffee</code> file that has been compiled.  This may not be desired behavior, so this is turned off by default</p>
+
+<pre><code>appServer.addRoute("/servitude/(.+)", servitude, { basedir: "./files", uglify: true });
+</code></pre>
+
+<h3>Filters</h3>
+
+<p>Filters are more powerful and allow you to process any file as you would like.  This is a good way to add something like <code>Handlebars</code> template compilation.  Simply set the <code>processed</code> property on the <code>record</code> to </p>
+
+<pre><code>var filter = function (record, options, callback) {
+  record.data = 'var Templates = Templates || { };' +
+               'Templates[\"' + record.filename + '\"] = Handlebars.template("' + handlebars.precompile(record.data) + '");';
+
+  record.processed = 'injectJS(' + JSON.stringify(record)  + ');';
+  callback(null, record);
+};
+
+appServer.addRoute("/servitude/(.+)", servitude, {basedir: "./files", filters: { ".+handlebars$": filter } });
+</code></pre>
+
+<h2>Client Side</h2>
+
+<p>A <code>servitude</code> object is returned with all methods for injection into the DOM.</p>
+
+<pre><code>if (servitude.errors.length) {
+  console.log("errors: ");
+  console.dir(servitude.errors);
+}
+</code></pre>
+
+<p>Injection occurs via the <code>servitude.injectCSS()</code>  and <code>servitude.injectJS()</code> methods upon load.</p>
+      </section>
+    </div>
+    <footer>
+      <p>Project maintained by <a href="https://github.com/JerrySievert">JerrySievert</a></p>
+      <p>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></p>
+    </footer>
+    <!--[if !IE]><script>fixScale(document);</script><!--<![endif]-->
+  </body>
+</html>
