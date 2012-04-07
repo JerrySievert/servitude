@@ -62,17 +62,21 @@ If `uglify` is enabled in the `options`, an attempt is made to `uglify` any Java
 
 ### Filters
 
-Filters are more powerful and allow you to process any file as you would like.  This is a good way to add something like `Handlebars` template compilation.  Simply set the `processed` property on the `record` to 
+Filters are more powerful and allow you to process any file as you would like.  This is a good way to add something like `Handlebars` template compilation.  Simply set the `data` property on the `record` to the `JavaScript` or `CSS` that should be injected, and the `processed` property on the `record` to a string containing either a `servitude.injectCSS()` or `servitude.injectJS()` call containing `JSON.stringify(record)`:
 
     var filter = function (record, options, callback) {
       record.data = 'var Templates = Templates || { };' +
-                   'Templates[\"' + record.filename + '\"] = Handlebars.template("' + handlebars.precompile(record.data) + '");';
+                    'Templates[\"' + record.filename + '\"] = Handlebars.template("' +
+                    handlebars.precompile(record.data) + '");';
     
       record.processed = 'injectJS(' + JSON.stringify(record)  + ');';
+
       callback(null, record);
     };
     
-    appServer.addRoute("/servitude/(.+)", servitude, {basedir: "./files", filters: { ".+handlebars$": filter } });
+    appServer.addRoute("/servitude/(.+)",
+                       servitude,
+                       { basedir: "./files", filters: { ".+handlebars$": filter } });
 
 
 ## Client Side
