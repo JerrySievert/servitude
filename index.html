@@ -104,6 +104,7 @@ server.listen(3000);
                 'Templates[\"' + record.filename + '\"] = Handlebars.template("' +
                 handlebars.precompile(record.data) + '");';
 
+  record.mimetype  = 'text/javascript';
   record.processed = 'injectJS(' + JSON.stringify(record)  + ');';
   callback(null, record);
 };
@@ -115,15 +116,15 @@ appServer.addRoute("/servitude/(.+)",
 
 <h2>Client Side</h2>
 
-<p>A <code>servitude</code> object is returned with all methods for injection into the DOM.</p>
+<p><code>Servitude</code> operates in two modes. If a single file is requested, only the file itself is returned.  If multiple files are requested, a <code>servitude</code> object is returned and injection into the DOM occurs.</p>
 
-<pre><code>if (servitude.errors.length) {
+<p>Injection occurs via the <code>servitude.injectCSS()</code>  and <code>servitude.injectJS()</code> methods upon load.  Upon error, any errors are pushed into the <code>servitude.errors</code> array.</p>
+
+<pre><code>if (servitude && servitude.errors.length) {
   console.log("errors: ");
   console.dir(servitude.errors);
 }
 </code></pre>
-
-<p>Injection occurs via the <code>servitude.injectCSS()</code>  and <code>servitude.injectJS()</code> methods upon load.</p>
 
 <p>An implementation of <code>servitude</code> ported to <a href="https://github.com/senchalabs/connect">Connect</a> can be found at <a href="https://github.com/oJshua/servitude-connect">https://github.com/oJshua/servitude-connect</a></p>
       </section>
