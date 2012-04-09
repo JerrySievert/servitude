@@ -110,7 +110,7 @@ vows.describe('Servitude').addBatch({
         'the compiled and uglified version is returned': function (err, data) {
             var mtime = fs.statSync(__dirname + '/files/c.coffee').mtime.valueOf();
 
-            assert.equal(data, '((function(){var a,b;a=function(){var a,c,d;d=[];for(a=0,c=list.length;a<c;a++)b=list[a],d.push(math.cube(b));return d}()})).call(this)');
+            assert.equal(data, '(function(){var a,b;a=function(){var a,c,d;d=[];for(a=0,c=list.length;a<c;a++)b=list[a],d.push(math.cube(b));return d}()}).call(this)');
         }
     },
     'when a single stylus file is requested': {

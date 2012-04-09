@@ -14,7 +14,7 @@
     "node": ">=0.4.3"
   },
   "dependencies": {
-    "uglify-js": "~1.2.0",
+    "uglify-js": "1.2.6",
     "coffee-script": "~1.2.0",
     "stylus": "~0.24.0",
     "less": "1.3.x"
