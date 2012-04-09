@@ -20,10 +20,28 @@ vows.describe('Servitude').addBatch({
 
             servitude.plugin(req, res, { path: "/servitude(.+)", basedir: __dirname + "/files" });
         },
-        'the correct result is returned': function (err, data) {
+        'only the css is returned': function (err, data) {
             var mtime = fs.statSync(__dirname + '/files/a.css').mtime.valueOf();
 
-            assert.equal(data, 'var servitude = servitude || {\n    "errors": [ ],\n    "injectCSS": function (data) {\n        var styleElem = document.createElement("style");\n\n        styleElem.setAttribute("data-injected-css", data.filename);\n        styleElem.setAttribute("type", "text/css");\n        styles = document.getElementsByTagName("style");\n        domTarget = styles.length ? styles[styles.length - 1] : document.getElementsByTagName("script")[0];\n        domTarget.parentNode.appendChild(styleElem);\n        if (styleElem.styleSheet) {\n            styleElem.styleSheet.cssText = data.data;\n        } else {\n            styleElem.appendChild(document.createTextNode(data.data));\n        }\n    },\n    "injectJS": function (data) {\n        var jsElem = document.createElement("script");\n\n        jsElem.setAttribute("data-injected-javascript", data.filename);\n        jsElem.setAttribute("type", "text/javascript");\n        domTarget = document.getElementsByTagName("script")[0];\n        domTarget.parentNode.appendChild(jsElem);\n        jsElem.text = data.data;\n    }\n};\nservitude.injectCSS({"data":"h1 { color: red; font-size: 22px; }","modified":'+ mtime +',"filename":"/a.css","index":1});');
+            assert.equal(data, 'h1 { color: red; font-size: 22px; }');
+        }
+    },
+    'when multiple css files are requested': {
+        topic: function () {
+            var req = new mrequest.request();
+            req.url = "/servitude/a.css,/a2.css";
+
+            var res = new mresponse.response();
+            var callback = this.callback;
+            res.end = function () { callback(undefined, this._internals.buffer); };
+
+            servitude.plugin(req, res, { path: "/servitude(.+)", basedir: __dirname + "/files" });
+        },
+        'a servitude injection for 2 css files is returned': function (err, data) {
+            var mtimeA = fs.statSync(__dirname + '/files/a.css').mtime.valueOf();
+            var mtimeA2 = fs.statSync(__dirname + '/files/a2.css').mtime.valueOf();
+
+            assert.equal(data, 'var servitude = servitude || {\n    "errors": [ ],\n    "injectCSS": function (data) {\n        var styleElem = document.createElement("style");\n\n        styleElem.setAttribute("data-injected-css", data.filename);\n        styleElem.setAttribute("type", "text/css");\n        styles = document.getElementsByTagName("style");\n        domTarget = styles.length ? styles[styles.length - 1] : document.getElementsByTagName("script")[0];\n        domTarget.parentNode.appendChild(styleElem);\n        if (styleElem.styleSheet) {\n            styleElem.styleSheet.cssText = data.data;\n        } else {\n            styleElem.appendChild(document.createTextNode(data.data));\n        }\n    },\n    "injectJS": function (data) {\n        var jsElem = document.createElement("script");\n\n        jsElem.setAttribute("data-injected-javascript", data.filename);\n        jsElem.setAttribute("type", "text/javascript");\n        domTarget = document.getElementsByTagName("script")[0];\n        domTarget.parentNode.appendChild(jsElem);\n        jsElem.text = data.data;\n    }\n};\nservitude.injectCSS({"data":"h1 { color: red; font-size: 22px; }","modified":'+ mtimeA +',"filename":"/a.css","index":1,"mimetype":"text/css"});\nservitude.injectCSS({"data":"h2 { color: blue; font-size: 18px; }","modified":' + mtimeA2 + ',"filename":"/a2.css","index":2,"mimetype":"text/css"});');
         }
     },
     'when a single javascript file is requested': {
@@ -37,10 +55,28 @@ vows.describe('Servitude').addBatch({
 
             servitude.plugin(req, res, { path: "/servitude(.+)", basedir: __dirname + "/files" });
         },
-        'the correct result is returned': function (err, data) {
+        'only the javascript is returned': function (err, data) {
             var mtime = fs.statSync(__dirname + '/files/b.js').mtime.valueOf();
 
-            assert.equal(data, 'var servitude = servitude || {\n    "errors": [ ],\n    "injectCSS": function (data) {\n        var styleElem = document.createElement("style");\n\n        styleElem.setAttribute("data-injected-css", data.filename);\n        styleElem.setAttribute("type", "text/css");\n        styles = document.getElementsByTagName("style");\n        domTarget = styles.length ? styles[styles.length - 1] : document.getElementsByTagName("script")[0];\n        domTarget.parentNode.appendChild(styleElem);\n        if (styleElem.styleSheet) {\n            styleElem.styleSheet.cssText = data.data;\n        } else {\n            styleElem.appendChild(document.createTextNode(data.data));\n        }\n    },\n    "injectJS": function (data) {\n        var jsElem = document.createElement("script");\n\n        jsElem.setAttribute("data-injected-javascript", data.filename);\n        jsElem.setAttribute("type", "text/javascript");\n        domTarget = document.getElementsByTagName("script")[0];\n        domTarget.parentNode.appendChild(jsElem);\n        jsElem.text = data.data;\n    }\n};\nservitude.injectJS({"data":"console.log(\\"hello from a\\");","modified":' + mtime + ',"filename":"/b.js","index":1});');
+            assert.equal(data, 'console.log("hello from a");');
+        }
+    },
+    'when a multiple javascript files are requested': {
+        topic: function () {
+            var req = new mrequest.request();
+            req.url = "/servitude/b.js,/b2.js";
+
+            var res = new mresponse.response();
+            var callback = this.callback;
+            res.end = function () { callback(undefined, this._internals.buffer); };
+
+            servitude.plugin(req, res, { path: "/servitude(.+)", basedir: __dirname + "/files" });
+        },
+        'two servitude injections are returned': function (err, data) {
+            var mtimeB = fs.statSync(__dirname + '/files/b.js').mtime.valueOf();
+            var mtimeB2 = fs.statSync(__dirname + '/files/b2.js').mtime.valueOf();
+
+            assert.equal(data, 'var servitude = servitude || {\n    "errors": [ ],\n    "injectCSS": function (data) {\n        var styleElem = document.createElement("style");\n\n        styleElem.setAttribute("data-injected-css", data.filename);\n        styleElem.setAttribute("type", "text/css");\n        styles = document.getElementsByTagName("style");\n        domTarget = styles.length ? styles[styles.length - 1] : document.getElementsByTagName("script")[0];\n        domTarget.parentNode.appendChild(styleElem);\n        if (styleElem.styleSheet) {\n            styleElem.styleSheet.cssText = data.data;\n        } else {\n            styleElem.appendChild(document.createTextNode(data.data));\n        }\n    },\n    "injectJS": function (data) {\n        var jsElem = document.createElement("script");\n\n        jsElem.setAttribute("data-injected-javascript", data.filename);\n        jsElem.setAttribute("type", "text/javascript");\n        domTarget = document.getElementsByTagName("script")[0];\n        domTarget.parentNode.appendChild(jsElem);\n        jsElem.text = data.data;\n    }\n};\nservitude.injectJS({"data":"console.log(\\"hello from a\\");","modified":' + mtimeB + ',"filename":"/b.js","index":1,"mimetype":"text/javascript"});\nservitude.injectJS({"data":"console.log(\\"hello from b\\");","modified":' + mtimeB2 + ',"filename":"/b2.js","index":2,"mimetype":"text/javascript"});');
         }
     },
     'when a single coffeescript file is requested': {
@@ -57,7 +93,7 @@ vows.describe('Servitude').addBatch({
         'the compiled version is returned': function (err, data) {
             var mtime = fs.statSync(__dirname + '/files/c.coffee').mtime.valueOf();
 
-            assert.equal(data, 'var servitude = servitude || {\n    "errors": [ ],\n    "injectCSS": function (data) {\n        var styleElem = document.createElement("style");\n\n        styleElem.setAttribute("data-injected-css", data.filename);\n        styleElem.setAttribute("type", "text/css");\n        styles = document.getElementsByTagName("style");\n        domTarget = styles.length ? styles[styles.length - 1] : document.getElementsByTagName("script")[0];\n        domTarget.parentNode.appendChild(styleElem);\n        if (styleElem.styleSheet) {\n            styleElem.styleSheet.cssText = data.data;\n        } else {\n            styleElem.appendChild(document.createTextNode(data.data));\n        }\n    },\n    "injectJS": function (data) {\n        var jsElem = document.createElement("script");\n\n        jsElem.setAttribute("data-injected-javascript", data.filename);\n        jsElem.setAttribute("type", "text/javascript");\n        domTarget = document.getElementsByTagName("script")[0];\n        domTarget.parentNode.appendChild(jsElem);\n        jsElem.text = data.data;\n    }\n};\nservitude.injectJS({"data":"(function() {\\n  var cubes, num;\\n\\n  cubes = (function() {\\n    var _i, _len, _results;\\n    _results = [];\\n    for (_i = 0, _len = list.length; _i < _len; _i++) {\\n      num = list[_i];\\n      _results.push(math.cube(num));\\n    }\\n    return _results;\\n  })();\\n\\n}).call(this);\\n","modified":' + mtime + ',"filename":"/c.coffee","index":1});');
+            assert.equal(data, "(function() {\n  var cubes, num;\n\n  cubes = (function() {\n    var _i, _len, _results;\n    _results = [];\n    for (_i = 0, _len = list.length; _i < _len; _i++) {\n      num = list[_i];\n      _results.push(math.cube(num));\n    }\n    return _results;\n  })();\n\n}).call(this);\n");
         }
     },
     'when a single stylus file is requested': {
@@ -74,7 +110,7 @@ vows.describe('Servitude').addBatch({
         'the compiled version is returned': function (err, data) {
             var mtime = fs.statSync(__dirname + '/files/d.styl').mtime.valueOf();
 
-            assert.equal(data, 'var servitude = servitude || {\n    "errors": [ ],\n    "injectCSS": function (data) {\n        var styleElem = document.createElement("style");\n\n        styleElem.setAttribute("data-injected-css", data.filename);\n        styleElem.setAttribute("type", "text/css");\n        styles = document.getElementsByTagName("style");\n        domTarget = styles.length ? styles[styles.length - 1] : document.getElementsByTagName("script")[0];\n        domTarget.parentNode.appendChild(styleElem);\n        if (styleElem.styleSheet) {\n            styleElem.styleSheet.cssText = data.data;\n        } else {\n            styleElem.appendChild(document.createTextNode(data.data));\n        }\n    },\n    "injectJS": function (data) {\n        var jsElem = document.createElement("script");\n\n        jsElem.setAttribute("data-injected-javascript", data.filename);\n        jsElem.setAttribute("type", "text/javascript");\n        domTarget = document.getElementsByTagName("script")[0];\n        domTarget.parentNode.appendChild(jsElem);\n        jsElem.text = data.data;\n    }\n};\nservitude.injectCSS({"data":"body {\\n  background-color: #abc;\\n}\\nh1 {\\n  color: #cba;\\n}\\n","modified":' + mtime + ',"filename":"/d.styl","index":1});');
+            assert.equal(data, "body {\n  background-color: #abc;\n}\nh1 {\n  color: #cba;\n}\n");
         }
     },
     'when a single less file is requested': {
@@ -91,7 +127,25 @@ vows.describe('Servitude').addBatch({
         'the compiled version is returned': function (err, data) {
             var mtime = fs.statSync(__dirname + '/files/e.less').mtime.valueOf();
 
-            assert.equal(data, 'var servitude = servitude || {\n    "errors": [ ],\n    "injectCSS": function (data) {\n        var styleElem = document.createElement("style");\n\n        styleElem.setAttribute("data-injected-css", data.filename);\n        styleElem.setAttribute("type", "text/css");\n        styles = document.getElementsByTagName("style");\n        domTarget = styles.length ? styles[styles.length - 1] : document.getElementsByTagName("script")[0];\n        domTarget.parentNode.appendChild(styleElem);\n        if (styleElem.styleSheet) {\n            styleElem.styleSheet.cssText = data.data;\n        } else {\n            styleElem.appendChild(document.createTextNode(data.data));\n        }\n    },\n    "injectJS": function (data) {\n        var jsElem = document.createElement("script");\n\n        jsElem.setAttribute("data-injected-javascript", data.filename);\n        jsElem.setAttribute("type", "text/javascript");\n        domTarget = document.getElementsByTagName("script")[0];\n        domTarget.parentNode.appendChild(jsElem);\n        jsElem.text = data.data;\n    }\n};\nservitude.injectCSS({"data":"body {\\n  background-color: #abc;\\n}\\nbody h1 {\\n  color: #cba;\\n}\\n","modified":' + mtime + ',"filename":"/e.less","index":1});');
+            assert.equal(data, "body {\n  background-color: #abc;\n}\nbody h1 {\n  color: #cba;\n}\n");
+        }
+    },
+    'when a multiple less and css files are requested': {
+        topic: function () {
+            var req = new mrequest.request();
+            req.url = "/servitude/e.less,/a.css";
+
+            var res = new mresponse.response();
+            var callback = this.callback;
+            res.end = function () { callback(undefined, this._internals.buffer); };
+
+            servitude.plugin(req, res, { path: "/servitude(.+)", basedir: __dirname + "/files" });
+        },
+        'the compiled version is returned for servitude injection': function (err, data) {
+            var mtimeE = fs.statSync(__dirname + '/files/e.less').mtime.valueOf();
+            var mtimeA = fs.statSync(__dirname + '/files/a.css').mtime.valueOf();
+
+            assert.equal(data, 'var servitude = servitude || {\n    "errors": [ ],\n    "injectCSS": function (data) {\n        var styleElem = document.createElement("style");\n\n        styleElem.setAttribute("data-injected-css", data.filename);\n        styleElem.setAttribute("type", "text/css");\n        styles = document.getElementsByTagName("style");\n        domTarget = styles.length ? styles[styles.length - 1] : document.getElementsByTagName("script")[0];\n        domTarget.parentNode.appendChild(styleElem);\n        if (styleElem.styleSheet) {\n            styleElem.styleSheet.cssText = data.data;\n        } else {\n            styleElem.appendChild(document.createTextNode(data.data));\n        }\n    },\n    "injectJS": function (data) {\n        var jsElem = document.createElement("script");\n\n        jsElem.setAttribute("data-injected-javascript", data.filename);\n        jsElem.setAttribute("type", "text/javascript");\n        domTarget = document.getElementsByTagName("script")[0];\n        domTarget.parentNode.appendChild(jsElem);\n        jsElem.text = data.data;\n    }\n};\nservitude.injectCSS({"data":"body {\\n  background-color: #abc;\\n}\\nbody h1 {\\n  color: #cba;\\n}\\n","modified":' + mtimeE + ',"filename":"/e.less","index":1,"mimetype":"text/css"});\nservitude.injectCSS({"data":"h1 { color: red; font-size: 22px; }","modified":' + mtimeA + ',"filename":"/a.css","index":2,"mimetype":"text/css"});');
         }
     },
     'when an unknown javascript file is requested': {
@@ -105,7 +159,7 @@ vows.describe('Servitude').addBatch({
 
             servitude.plugin(req, res, { path: "/servitude(.+)", basedir: __dirname + "/files" });
         },
-        'the correct result is returned': function (err, data) {
+        'a servitude object with an error injection is returned': function (err, data) {
             assert.equal(data, 'var servitude = servitude || {\n    "errors": [ ],\n    "injectCSS": function (data) {\n        var styleElem = document.createElement("style");\n\n        styleElem.setAttribute("data-injected-css", data.filename);\n        styleElem.setAttribute("type", "text/css");\n        styles = document.getElementsByTagName("style");\n        domTarget = styles.length ? styles[styles.length - 1] : document.getElementsByTagName("script")[0];\n        domTarget.parentNode.appendChild(styleElem);\n        if (styleElem.styleSheet) {\n            styleElem.styleSheet.cssText = data.data;\n        } else {\n            styleElem.appendChild(document.createTextNode(data.data));\n        }\n    },\n    "injectJS": function (data) {\n        var jsElem = document.createElement("script");\n\n        jsElem.setAttribute("data-injected-javascript", data.filename);\n        jsElem.setAttribute("type", "text/javascript");\n        domTarget = document.getElementsByTagName("script")[0];\n        domTarget.parentNode.appendChild(jsElem);\n        jsElem.text = data.data;\n    }\n};\nservitude.errors.push("Unable to find /q.js");\n');
         }
     },
@@ -127,11 +181,11 @@ vows.describe('Servitude').addBatch({
 
             servitude.plugin(req, res, { path: "/servitude(.+)", basedir: __dirname + "/files", filters: { ".+js$": filter } });
         },
-        'the correct result is returned': function (err, data) {
+        'the filtered result is returned': function (err, data) {
             var mtime = fs.statSync(__dirname + '/files/b.js').mtime.valueOf();
 
-            assert.equal(data, 'var servitude = servitude || {\n    "errors": [ ],\n    "injectCSS": function (data) {\n        var styleElem = document.createElement("style");\n\n        styleElem.setAttribute("data-injected-css", data.filename);\n        styleElem.setAttribute("type", "text/css");\n        styles = document.getElementsByTagName("style");\n        domTarget = styles.length ? styles[styles.length - 1] : document.getElementsByTagName("script")[0];\n        domTarget.parentNode.appendChild(styleElem);\n        if (styleElem.styleSheet) {\n            styleElem.styleSheet.cssText = data.data;\n        } else {\n            styleElem.appendChild(document.createTextNode(data.data));\n        }\n    },\n    "injectJS": function (data) {\n        var jsElem = document.createElement("script");\n\n        jsElem.setAttribute("data-injected-javascript", data.filename);\n        jsElem.setAttribute("type", "text/javascript");\n        domTarget = document.getElementsByTagName("script")[0];\n        domTarget.parentNode.appendChild(jsElem);\n        jsElem.text = data.data;\n    }\n};\nservitude.injectJS({"data":"console.log(\\"goodbye from a\\");","modified":' + mtime + ',"filename":"/b.js","index":1});');
-        }            
+            assert.equal(data, "console.log(\"goodbye from a\");");
+        }
     },
     'when uglify is specified': {
         topic: function () {
@@ -144,11 +198,11 @@ vows.describe('Servitude').addBatch({
 
             servitude.plugin(req, res, { path: "/servitude(.+)", basedir: __dirname + "/files", uglify: true });
         },
-        'the correct result is returned': function (err, data) {
+        'the uglified version of the code is returned': function (err, data) {
             var mtime = fs.statSync(__dirname + '/files/b.js').mtime.valueOf();
 
-            assert.equal(data, 'var servitude = servitude || {\n    "errors": [ ],\n    "injectCSS": function (data) {\n        var styleElem = document.createElement("style");\n\n        styleElem.setAttribute("data-injected-css", data.filename);\n        styleElem.setAttribute("type", "text/css");\n        styles = document.getElementsByTagName("style");\n        domTarget = styles.length ? styles[styles.length - 1] : document.getElementsByTagName("script")[0];\n        domTarget.parentNode.appendChild(styleElem);\n        if (styleElem.styleSheet) {\n            styleElem.styleSheet.cssText = data.data;\n        } else {\n            styleElem.appendChild(document.createTextNode(data.data));\n        }\n    },\n    "injectJS": function (data) {\n        var jsElem = document.createElement("script");\n\n        jsElem.setAttribute("data-injected-javascript", data.filename);\n        jsElem.setAttribute("type", "text/javascript");\n        domTarget = document.getElementsByTagName("script")[0];\n        domTarget.parentNode.appendChild(jsElem);\n        jsElem.text = data.data;\n    }\n};\nservitude.injectJS({"data":"console.log(\\"hello from a\\")","modified":' + mtime + ',"filename":"/b.js","index":1});');
-        }            
+            assert.equal(data, "console.log(\"hello from a\")");
+        }
     },
     'when caching is enabled': {
         topic: function () {
@@ -164,7 +218,7 @@ vows.describe('Servitude').addBatch({
         'data is returned the first time': function (err, data) {
             var mtime = fs.statSync(__dirname + '/files/b.js').mtime.valueOf();
 
-            assert.equal(data, 'var servitude = servitude || {\n    "errors": [ ],\n    "injectCSS": function (data) {\n        var styleElem = document.createElement("style");\n\n        styleElem.setAttribute("data-injected-css", data.filename);\n        styleElem.setAttribute("type", "text/css");\n        styles = document.getElementsByTagName("style");\n        domTarget = styles.length ? styles[styles.length - 1] : document.getElementsByTagName("script")[0];\n        domTarget.parentNode.appendChild(styleElem);\n        if (styleElem.styleSheet) {\n            styleElem.styleSheet.cssText = data.data;\n        } else {\n            styleElem.appendChild(document.createTextNode(data.data));\n        }\n    },\n    "injectJS": function (data) {\n        var jsElem = document.createElement("script");\n\n        jsElem.setAttribute("data-injected-javascript", data.filename);\n        jsElem.setAttribute("type", "text/javascript");\n        domTarget = document.getElementsByTagName("script")[0];\n        domTarget.parentNode.appendChild(jsElem);\n        jsElem.text = data.data;\n    }\n};\nservitude.injectJS({"data":"console.log(\\"hello from a\\")","modified":' + mtime + ',"filename":"/b.js","index":1});');
+            assert.equal(data, 'console.log("hello from a")');
         },
         'and returned the second time when if-modified-since is set': {
             topic: function () {
