@@ -96,6 +96,23 @@ vows.describe('Servitude').addBatch({
             assert.equal(data, "(function() {\n  var cubes, num;\n\n  cubes = (function() {\n    var _i, _len, _results;\n    _results = [];\n    for (_i = 0, _len = list.length; _i < _len; _i++) {\n      num = list[_i];\n      _results.push(math.cube(num));\n    }\n    return _results;\n  })();\n\n}).call(this);\n");
         }
     },
+    'when a single coffeescript file is requested and uglify is turned on': {
+        topic: function () {
+            var req = new mrequest.request();
+            req.url = "/servitude/c.coffee";
+
+            var res = new mresponse.response();
+            var callback = this.callback;
+            res.end = function () { callback(undefined, this._internals.buffer); };
+
+            servitude.plugin(req, res, { path: "/servitude(.+)", basedir: __dirname + "/files", uglify: true });
+        },
+        'the compiled and uglified version is returned': function (err, data) {
+            var mtime = fs.statSync(__dirname + '/files/c.coffee').mtime.valueOf();
+
+            assert.equal(data, '((function(){var a,b;a=function(){var a,c,d;d=[];for(a=0,c=list.length;a<c;a++)b=list[a],d.push(math.cube(b));return d}()})).call(this)');
+        }
+    },
     'when a single stylus file is requested': {
         topic: function () {
             var req = new mrequest.request();
@@ -113,6 +130,21 @@ vows.describe('Servitude').addBatch({
             assert.equal(data, "body {\n  background-color: #abc;\n}\nh1 {\n  color: #cba;\n}\n");
         }
     },
+    'when a bad stylus file is requested': {
+        topic: function () {
+            var req = new mrequest.request();
+            req.url = "/servitude/d2.styl";
+
+            var res = new mresponse.response();
+            var callback = this.callback;
+            res.end = function () { callback(undefined, this._internals.buffer); };
+
+            servitude.plugin(req, res, { path: "/servitude(.+)", basedir: __dirname + "/files" });
+        },
+        'a servitude object with an error is returned': function (err, data) {
+            assert.equal(data, "var servitude = servitude || {\n    \"errors\": [ ],\n    \"injectCSS\": function (data) {\n        var styleElem = document.createElement(\"style\");\n\n        styleElem.setAttribute(\"data-injected-css\", data.filename);\n        styleElem.setAttribute(\"type\", \"text/css\");\n        styles = document.getElementsByTagName(\"style\");\n        domTarget = styles.length ? styles[styles.length - 1] : document.getElementsByTagName(\"script\")[0];\n        domTarget.parentNode.appendChild(styleElem);\n        if (styleElem.styleSheet) {\n            styleElem.styleSheet.cssText = data.data;\n        } else {\n            styleElem.appendChild(document.createTextNode(data.data));\n        }\n    },\n    \"injectJS\": function (data) {\n        var jsElem = document.createElement(\"script\");\n\n        jsElem.setAttribute(\"data-injected-javascript\", data.filename);\n        jsElem.setAttribute(\"type\", \"text/javascript\");\n        domTarget = document.getElementsByTagName(\"script\")[0];\n        domTarget.parentNode.appendChild(jsElem);\n        jsElem.text = data.data;\n    }\n};\nservitude.errors.push(\"ParseError: stylus:5\n   1| body\n   2|   background-color #abc\n   3| \n   4|  \011h1\n > 5| color\n\nexpected \"indent\", got \"eos\"\n\");\n");
+        }
+    },
     'when a single less file is requested': {
         topic: function () {
             var req = new mrequest.request();
@@ -128,6 +160,21 @@ vows.describe('Servitude').addBatch({
             var mtime = fs.statSync(__dirname + '/files/e.less').mtime.valueOf();
 
             assert.equal(data, "body {\n  background-color: #abc;\n}\nbody h1 {\n  color: #cba;\n}\n");
+        }
+    },
+    'when a bad less file is requested': {
+        topic: function () {
+            var req = new mrequest.request();
+            req.url = "/servitude/e2.less";
+
+            var res = new mresponse.response();
+            var callback = this.callback;
+            res.end = function () { callback(undefined, this._internals.buffer); };
+
+            servitude.plugin(req, res, { path: "/servitude(.+)", basedir: __dirname + "/files" });
+        },
+        'a servitude object with an error is returned': function (err, data) {
+            assert.equal(data, "var servitude = servitude || {\n    \"errors\": [ ],\n    \"injectCSS\": function (data) {\n        var styleElem = document.createElement(\"style\");\n\n        styleElem.setAttribute(\"data-injected-css\", data.filename);\n        styleElem.setAttribute(\"type\", \"text/css\");\n        styles = document.getElementsByTagName(\"style\");\n        domTarget = styles.length ? styles[styles.length - 1] : document.getElementsByTagName(\"script\")[0];\n        domTarget.parentNode.appendChild(styleElem);\n        if (styleElem.styleSheet) {\n            styleElem.styleSheet.cssText = data.data;\n        } else {\n            styleElem.appendChild(document.createTextNode(data.data));\n        }\n    },\n    \"injectJS\": function (data) {\n        var jsElem = document.createElement(\"script\");\n\n        jsElem.setAttribute(\"data-injected-javascript\", data.filename);\n        jsElem.setAttribute(\"type\", \"text/javascript\");\n        domTarget = document.getElementsByTagName(\"script\")[0];\n        domTarget.parentNode.appendChild(jsElem);\n        jsElem.text = data.data;\n    }\n};\nservitude.errors.push(\"missing closing `}`\");\n");
         }
     },
     'when a multiple less and css files are requested': {
